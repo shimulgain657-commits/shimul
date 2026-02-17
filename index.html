@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shimul's Car Game</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #222; font-family: sans-serif; overflow: hidden; text-align: center; color: white; }
+        #gameContainer { position: relative; width: 100vw; height: 100vh; background: #444; overflow: hidden; border-left: 5px dashed #fff; border-right: 5px dashed #fff; margin: auto; }
+        .car { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 50px; height: 90px; background: #ff3e3e; border-radius: 10px; border: 3px solid #333; }
+        .car::before { content: ''; position: absolute; top: 10px; left: 5px; width: 34px; height: 20px; background: #add8e6; border-radius: 5px; }
+        .enemy { position: absolute; width: 50px; height: 90px; background: #3eafff; border-radius: 10px; }
+        .line { position: absolute; width: 10px; height: 100px; background: white; left: 50%; transform: translateX(-50%); }
+        #score { position: absolute; top: 10px; left: 10px; font-size: 24px; z-index: 10; }
+        .btn-container { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: space-around; }
+        button { padding: 20px; font-size: 20px; background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 50%; width: 80px; height: 80px; }
+    </style>
+</head>
+<body>
+
+    <div id="score">Score: 0</div>
+    <div id="gameContainer">
+        <div class="car" id="myCar"></div>
+    </div>
+
+    <div class="btn-container">
+        <button onclick="moveLeft()">◀</button>
+        <button onclick="moveRight()">▶</button>
+    </div>
+
+    <script>
+        const myCar = document.getElementById('myCar');
+        const gameContainer = document.getElementById('gameContainer');
+        let score = 0;
+        let carPos = gameContainer.offsetWidth / 2 - 25;
+
+        // রাস্তা তৈরির লাইন
+        for(let i=0; i<5; i++) {
+            let line = document.createElement('div');
+            line.className = 'line';
+            line.style.top = (i * 150) + 'px';
+            gameContainer.appendChild(line);
+        }
+
+        function moveLeft() { if(carPos > 50) carPos -= 30; myCar.style.left = carPos + 'px'; }
+        function moveRight() { if(carPos < gameContainer.offsetWidth - 100) carPos += 30; myCar.style.left = carPos + 'px'; }
+
+        // শত্রু গাড়ি তৈরি
+        function createEnemy() {
+            let enemy = document.createElement('div');
+            enemy.className = 'enemy';
+            enemy.style.left = Math.random() * (gameContainer.offsetWidth - 60) + 'px';
+            enemy.style.top = '-100px';
+            gameContainer.appendChild(enemy);
+
+            let interval = setInterval(() => {
+                let top = parseInt(enemy.style.top);
+                if(top > window.innerHeight) {
+                    clearInterval(interval);
+                    gameContainer.removeChild(enemy);
+                    score++;
+                    document.getElementById('score').innerText = "Score: " + score;
+                } else {
+                    enemy.style.top = (top + 5) + 'px';
+                }
+
+                // ধাক্কা লাগলে গেম শেষ
+                if (isCollide(myCar, enemy)) {
+                    alert("Game Over! Your Score: " + score);
+                    location.reload();
+                }
+            }, 20);
+        }
+
+        function isCollide(a, b) {
+            aRect = a.getBoundingClientRect();
+            bRect = b.getBoundingClientRect();
+            return !(aRect.top > bRect.bottom || aRect.bottom < bRect.top || aRect.right < bRect.left || aRect.left > bRect.right);
+        }
+
+        setInterval(createEnemy, 2000);
+    </script>
+</body>
+</html>
